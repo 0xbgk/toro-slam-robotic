@@ -1,0 +1,340 @@
+TORO Kurulumu ve Çalıştırılması
+-------------------------------
+
+
+
+Ubuntu Kurulumu
+~~~~~~~~~~~~~~~
+
+Öncelikle http://download.ros.org/downloads/turtlebot/ubuntu-14.04.2-desktop-amd64-turtlebot-RC0.iso/[buradan] ubuntu-14.04 turtlebot disk kalıbı indirilir. Ardından VirtualBox üzerine normal bir kurulum gerçekleştirilir.
+
+TORO Kurulumu
+~~~~~~~~~~~~~
+Depodan hızlı kurulum için aşağıdaki kodlar sanal makinemizdeki terminale girilir. 
+
+[source,terminal]
+-----------------
+$ svn co http://www.openslam.org/data/svn/toro
+$ cd toro
+$ cd trunk
+$ make
+-----------------
+
+TORO'da örnek dosyanın çalıştırılması
+
+[source,terminal]
+-----------------
+$ ./toro ../data/2D/w10000-odom.graph
+-----------------
+
+image:http://i.imgur.com/jiIbyqp.jpg[alt="ornekgraph"]
+
+image:http://i.imgur.com/NHtXxDK.png[alt="optimizasyon_baslangici"]
+
+image:http://i.imgur.com/ssYj4F8.png[alt="optimizasyon_sonu"]
+
+{sp}+
+
+Gnuplot Kurulumu
+
+-----------------
+$ sudo apt-get install gnuplot
+-----------------
+
+{sp}+
+
+Gnuplot ile örnek dosyanın çizdirilmesi
+
+image:http://i.imgur.com/mJg68CT.png[alt="gnuplot_cizdirme"]
+
+{sp}+
+
+Gnuplot ile çizdirilen örnek
+
+image:http://i.imgur.com/1Bw432K.png[alt="gnuplot_cizdirme"]
+
+{sp}+
+
+RViz İle Datanın Çizimi
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Terminale
+
+[source,terminal]
+-----------------
+$ roscore
+-----------------
+
+Yazılarak roscore başlatılır.
+
+{sp}+
+
+
+Ardından yeni bir terminal açılırarak
+
+[source,terminal]
+-----------------
+$ rosrun gmapping slam_gmapping
+-----------------
+
+{sp}+
+
+Komutu girildikten sonra yeni bir terminal daha açılarak
+
+[source,terminal]
+-----------------
+$ rosparam set use_sim_time true
+$ rosrun rviz rviz
+-----------------
+
+{sp}+
+
+Komutları girilerek rviz başlatılır.
+
+image:http://i.imgur.com/4pJxSIG.png[alt="rviz"]
+
+{sp}+
+
+Ardından bir terminal daha açılarak aşağıdaki komutlar girilir
+
+[source,terminal]
+-----------------
+$ cd İndirilenler/
+/İndirilenler$ ls 2011-01-24-06-18-27.bag
+/İndirilenler$ rosbag play 2011-01-24-06-18-27.bag --clock
+-----------------
+
+{sp}+
+
+image:http://i.imgur.com/16EhkPU.png[alt="rviz"]
+
+{sp}+
+
+Ardından ekran görüntülerindeki adımlar takip edilir.
+
+image:http://i.imgur.com/oOKxlm0.png[alt="rviz1"]
+
+image:http://i.imgur.com/m3BIjC1.png[alt="rviz2"]
+
+image:http://i.imgur.com/13yotGg.png[alt="rviz3"]
+
+image:http://i.imgur.com/qOOtvQg.png[alt="rviz4"]
+
+image:http://i.imgur.com/djkDQiX.png[alt="rviz5"]
+
+image:http://i.imgur.com/Y80zWhi.png[alt="rviz6"]
+
+image:http://i.imgur.com/8pAoo8R.png[alt="rviz7"]
+
+image:http://i.imgur.com/ooIQr5o.png[alt="rviz8"]
+
+Matematiksel İşlemlerin Karşılığı
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Eski görüntünün yeni görüntü ile karşılaştırılıp değiştirilmesi =
+
+image:http://i.imgur.com/bk1Ldu8.png[alt="Matematiksel"]
+
+image:http://i.imgur.com/ijNUKpv.png[alt="Matematiksel2"]
+
+-----------------
+string stripExtension(const string s){
+  int i;
+  for (i=s.length()-1; i>0; i--){
+    string k=s.substr(i,1);
+    if (k==".")
+      break;
+  }
+  return s.substr(0,i);
+}
+
+string getExtension(const string s){
+  int i;
+  for (i=s.length()-1; i>0; i--){
+    string k=s.substr(i,1);
+    if (k==".")
+      break;
+  }
+  return s.substr(i,s.length()-i);
+}
+-----------------
+Aşağıdaki figürde (a) ve (b)de örnek bir grafiğin değişkenlerle ifade edilebilmesi için kullanılan ağaçların yapısını belirlemektedir. Küçük gri bağlantılar, tanıtılan kısıtlamalardır. (c) Yoldaki en küçük seviyeye sahip düğüme göre düzenlenen kısıtlamaların işlenmesini önler.Tüm ebeveynlerin rotasyonel bileşenlerinin yeniden hesaplanması. Aynı şey, aynı seviyedeki farklı kök düğümleri olan alt ağaçlar için de geçerlidir.
+
+image:http://i.imgur.com/ip7nydg.png[alt="Figur
+"]
+
+Figürün kodlanmış hali 
+
+Ağacın oluşturulması ve düğümlerin yerleştirilmesi =
+
+-----------------
+int main (int argc, const char** argv){
+  TreeOptimizer2 pg;
+  bool compressIndices=false;
+  bool reduceNodes=true;
+  bool initializeOnTree=true;
+  int  treeType=0;
+  int  iterations=100;
+  bool dumpIterations=false;
+  bool dumpError=true;
+  bool overrideCovariances=false;
+  int  verboseLevel=0;
+
+  string filename;
+
+  if (argc==1){
+    int i=0;
+    while (message[i]!=0){
+      cerr << message[i++] << endl;
+    }
+    return 0;
+  }
+  int c=1;
+  while (c<argc){
+    if (string(argv[c])=="-vl"){
+      verboseLevel=atoi(argv[++c]);
+    } else if (string(argv[c])=="-dr"){
+      reduceNodes=false;
+    } else if (string(argv[c])=="-mst"){
+      treeType=1;
+    } else if (string(argv[c])=="-st"){
+      treeType=0;
+    } else if (string(argv[c])=="-ic"){
+      compressIndices=true;
+    } else if (string(argv[c])=="-nib"){
+      initializeOnTree=false;
+    } else if (string(argv[c])=="-i"){
+      iterations=atoi(argv[++c]);
+    } else if (string(argv[c])=="-df"){
+      dumpIterations=true;
+    } else if (string(argv[c])=="-nde"){
+      dumpError=false;
+    } else if (string(argv[c])=="-oc"){
+      overrideCovariances=true;
+    } else {
+      filename=argv[c];
+      break;
+    }
+    c++;
+  }
+
+  if (filename == "") {
+    cerr << "FATAL ERROR: Specify a graph file to load. Aborting." << endl;
+    return 0;
+  }
+-----------------
+Kısıtlamaların işlenmesinin önlenmesi ve sıkıştırılmaların yapılması =
+
+-----------------
+if (compressIndices){
+    cerr << "Compressing indices... ";
+    pg.compressIndices();
+    cerr << "Done" << endl;
+-----------------
+
+Kısıtlama başına güncellenmiş değişkenlerin sayısı =
+
+image:http://i.imgur.com/DLUOgSR.png[alt="MAT2"]
+
+Değişken için güncelleme kuralı=
+
+image:http://i.imgur.com/safHLPa.png[alt="MAT3"]
+
+
+S (xk, j, i) değerinin nereye bağlı olarak +1 veya -1 olduğu
+Xk parametresi Pji yolu üzerinde bulunur:
+
+image:http://i.imgur.com/TGYM2gz.png[alt="MAT4"]
+
+-------------
+  switch (treeType){
+  case 0:
+    cerr << "Incremental tree construction... ";
+    pg.buildSimpleTree();
+    cerr << "Done" << endl;
+    break;
+  case 1:
+    cerr << "MST construction... ";
+    pg.buildMST(pg.vertices.begin()->first);
+    cerr << "Done" << endl;
+    break;
+  default:
+    cerr << " FATAL ERROR: Invalid tree type. Aborting!";
+    return -1;
+  }
+-------------
+
+Oluşturulan ağaca göre ilk tahminlerin yapılması =
+
+Ortalama yol uzunluğu ve bu çözümü bulmak için iterasyon sayısı verilen datasete göre hesaplanır. Graf başlatılır ve oluşturulur.
+
+----------------
+if (initializeOnTree){
+    cerr << "Computing initial guess from observations... ";
+    pg.initializeOnTree();
+    cerr << "Done" << endl;
+  }
+
+  cerr << "Initializing the optimizer... ";
+  pg.initializeTreeParameters();
+  pg.initializeOptimization();
+  double l=pg.totalPathLength();
+  int nEdges=pg.edges.size();
+  double apl=l/(double)(nEdges);
+  cerr << "Done" << endl;
+
+
+  cerr << " Average path length=" << apl << endl;
+  cerr << " Complexity of an iteration=" << l  << endl;
+
+  string strippedFilename=stripExtension(filename);
+  string extension=getExtension(filename);
+
+  cerr << "Saving starting graph... ";
+  string output=strippedFilename+"-treeopt-initial.graph";
+  pg.save(output.c_str());
+  cerr << "Done" << endl << endl;
+
+  cerr << "Saving starting graph (gnuplot_... ";
+  output=strippedFilename+"-treeopt-initial.dat";
+  pg.saveGnuplot(output.c_str());
+  cerr << "Done" << endl << endl;
+
+----------------
+
+Optimizasyonun başlaması ve işlemlerin sonlandırılması burada gösterilmiştir.
+
+
+
+----------------
+  cerr << "**** Starting optimization ****" << endl;
+  struct timeval ts, te;
+  gettimeofday(&ts,0);
+  for (int i=0; i<iterations; i++){
+    pg.iterate();
+    if (dumpIterations){
+      char b[10];
+      sprintf(b,"%04d",i);
+      string output=strippedFilename+"-treeopt-" + b + ".dat";
+      pg.saveGnuplot(output.c_str());
+    }
+    if (dumpError){
+      // Hatayı hesapla ve boşalt
+      double error=pg.error();
+      cerr << "iteration = " << i << "  global error = " << error << "   error/constraint = " << error/nEdges << endl;
+    }
+  }
+  gettimeofday(&te,0);
+  cerr << "**** Optimization Done ****" << endl;
+
+  double dts=(te.tv_sec-ts.tv_sec)+1e-6*(te.tv_usec-ts.tv_usec);
+  cerr << "TOTAL TIME= " << dts << " s." << endl;
+
+  cerr << "Saving files...(graph file)" << endl;
+  output=strippedFilename+"-treeopt-final.graph";
+  pg.save(output.c_str());
+  cerr << "...(gnuplot file)..." << endl;
+  output=strippedFilename+"-treeopt-final.dat";
+  pg.saveGnuplot(output.c_str());
+
+  cerr << "Done" << endl;
+----------------
